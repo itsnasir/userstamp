@@ -20,7 +20,7 @@ module Ddb #:nodoc:
           object_stamper = if object.is_a?(ActiveRecord::Base)
             object.send("#{object.class.primary_key}".to_sym)
           else
-            object
+            !object ? nil : object
           end
 
           Thread.current["#{self.to_s.downcase}_#{self.object_id}_stamper"] = object_stamper
