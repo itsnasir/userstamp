@@ -7,9 +7,9 @@ module Ddb
 
       module InstanceMethods
         def userstamps(include_deleted_by = false)
-          column(Ddb::Userstamp.compatibility_mode ? :created_by : :creator_id, :uuid)
-          column(Ddb::Userstamp.compatibility_mode ? :updated_by : :updater_id, :uuid)
-          column(Ddb::Userstamp.compatibility_mode ? :deleted_by : :deleter_id, :uuid) if include_deleted_by
+          column(Ddb::Userstamp.compatibility_mode ? :created_by : :creator_id, "bigint")
+          column(Ddb::Userstamp.compatibility_mode ? :updated_by : :updater_id, "bigint")
+          column(Ddb::Userstamp.compatibility_mode ? :deleted_by : :deleter_id, "bigint") if include_deleted_by
         end
       end
     end
