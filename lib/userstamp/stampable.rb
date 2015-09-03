@@ -47,6 +47,16 @@ module Ddb #:nodoc:
           # Defaults to :deleted_by when compatibility mode is on
           class_attribute  :deleter_attribute
 
+          # What should be association name
+          # Defaults to :owned_by when compatibility mode is off
+          # Defaults to :creator when compatibility mode is on
+          class_attribute :creator_association_name
+
+          # What should be association name
+          # Defaults to :modified_by when compatibility mode is off
+          # Defaults to :updater when compatibility mode is on
+          class_attribute :updater_association_name
+
           self.stampable
         end
       end
@@ -67,22 +77,26 @@ module Ddb #:nodoc:
         # and <tt>before_create</tt> filters for doing the stamping.
         def stampable(options = {})
           defaults  = {
-                        :stamper_class_name => :user,
-                        :creator_attribute  => Ddb::Userstamp.compatibility_mode ? :created_by : :creator_id,
-                        :updater_attribute  => Ddb::Userstamp.compatibility_mode ? :updated_by : :updater_id,
-                        :deleter_attribute  => Ddb::Userstamp.compatibility_mode ? :deleted_by : :deleter_id
+                        :stamper_class_name        => :user,
+                        :creator_attribute         => Ddb::Userstamp.compatibility_mode ? :created_by : :creator_id,
+                        :updater_attribute         => Ddb::Userstamp.compatibility_mode ? :updated_by : :updater_id,
+                        :deleter_attribute         => Ddb::Userstamp.compatibility_mode ? :deleted_by : :deleter_id,
+                        :creator_association_name  => Ddb::Userstamp.compatibility_mode ? :owned_by : :creator,
+                        :updater_association_name  => Ddb::Userstamp.compatibility_mode ? :modified_by : :updater
                       }.merge(options)
 
-          self.stamper_class_name = defaults[:stamper_class_name].to_sym
-          self.creator_attribute  = defaults[:creator_attribute].to_sym
-          self.updater_attribute  = defaults[:updater_attribute].to_sym
-          self.deleter_attribute  = defaults[:deleter_attribute].to_sym
+          self.stamper_class_name        = defaults[:stamper_class_name].to_sym
+          self.creator_attribute         = defaults[:creator_attribute].to_sym
+          self.updater_attribute         = defaults[:updater_attribute].to_sym
+          self.deleter_attribute         = defaults[:deleter_attribute].to_sym
+          self.creator_association_name  = defaults[:creator_association_name].to_sym
+          self.updater_association_name  = defaults[:updater_association_name].to_sym
 
           class_eval do
-            belongs_to :creator, :class_name => self.stamper_class_name.to_s.singularize.camelize,
+            belongs_to self.creator_association_name, :class_name => self.stamper_class_name.to_s.singularize.camelize,
                                  :foreign_key => self.creator_attribute
                                  
-            belongs_to :updater, :class_name => self.stamper_class_name.to_s.singularize.camelize,
+            belongs_to self.updater_association_name, :class_name => self.stamper_class_name.to_s.singularize.camelize,
                                  :foreign_key => self.updater_attribute
                                  
             before_save     :set_updater_attribute
