@@ -78,11 +78,11 @@ module Ddb #:nodoc:
         def stampable(options = {})
           defaults  = {
                         :stamper_class_name        => :user,
-                        :creator_attribute         => Ddb::Userstamp.compatibility_mode ? :created_by : :creator_id,
-                        :updater_attribute         => Ddb::Userstamp.compatibility_mode ? :updated_by : :updater_id,
+                        :creator_attribute         => Ddb::Userstamp.compatibility_mode ? :created_by_id : :creator_id,
+                        :updater_attribute         => Ddb::Userstamp.compatibility_mode ? :updated_by_id : :updater_id,
                         :deleter_attribute         => Ddb::Userstamp.compatibility_mode ? :deleted_by : :deleter_id,
-                        :creator_association_name  => Ddb::Userstamp.compatibility_mode ? :owned_by : :creator,
-                        :updater_association_name  => Ddb::Userstamp.compatibility_mode ? :modified_by : :updater
+                        :creator_association_name  => Ddb::Userstamp.compatibility_mode ? :created_by : :owned_by,
+                        :updater_association_name  => Ddb::Userstamp.compatibility_mode ? :updated_by : :modified_by
                       }.merge(options)
 
           self.stamper_class_name        = defaults[:stamper_class_name].to_sym
@@ -93,8 +93,10 @@ module Ddb #:nodoc:
           self.updater_association_name  = defaults[:updater_association_name].to_sym
 
           class_eval do
-            belongs_to self.creator_association_name, :class_name => self.stamper_class_name.to_s.singularize.camelize,
+            unless defined?(Caboose::Acts::Paranoid)
+              belongs_to self.creator_association_name, :class_name => self.stamper_class_name.to_s.singularize.camelize,
                                  :foreign_key => self.creator_attribute
+            end
                                  
             belongs_to self.updater_association_name, :class_name => self.stamper_class_name.to_s.singularize.camelize,
                                  :foreign_key => self.updater_attribute
